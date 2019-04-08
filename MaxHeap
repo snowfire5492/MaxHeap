@@ -1,0 +1,115 @@
+/**
+ * CS 241
+ * Professor: Dr. Wei Sophie
+ *
+ * Project #2
+ *
+ * <create a Max-heap from at least 100 integers using both sequential and optimal 
+ * methods of insertion , and test software using (1) 20 sets of 100 randomly generated
+ * integers to build 20 heaps and find average number of swaps for both methods, and 
+ * (2) with fixed integers 1 - 100, printing first 10, the average number of swaps for both 
+ * optimal and insertion methods, and then perform 10 removal operations and output first
+ * 10 in order again. Program will print to console and to output.txt located in EricSchenck2.zip>
+ *
+ * @author Eric Schenck
+ * last modified: 10/23/17
+ */
+public class MaxHeap implements MaxHeapInterface{
+
+	private final int HEAP_SIZE = 101;			// index 1 - 100. neglect index 0
+	private int[] heap;
+	private int lastIndex = 0;					// last index initialized at 0
+	
+	// constructor
+	public MaxHeap(){
+		heap = new int[HEAP_SIZE];				// making a MaxHeap array size 101 [0,100]
+	}
+	
+	@Override
+	public int addOptimal(int[] entries){
+		int numOfSwaps = 0;						// to record number of swaps required
+		
+		for (int i = 0; i < entries.length; ++i)
+			heap[i+1] = entries[i];				// saving array of entries to heap 
+												// at this point its just a list, not a MaxHeap
+		lastIndex = entries.length;
+		 
+		for(int rootIndex = lastIndex / 2; rootIndex > 0; --rootIndex){
+												// finds parent of last leaf node and calls reheap(parent)
+			numOfSwaps += reheap(rootIndex);	// performs reheap operation on every parent position in heap
+		}										// returns number of swaps required each method call
+		
+		return numOfSwaps;						// returns total number of swaps needed for optimal method
+	}
+	
+	@Override
+	public int addSequential(int entry) {
+		
+		int currentIndex = lastIndex + 1;		// keeps track of currentIndex 
+		int parentIndex = currentIndex / 2;		// keeps track of parent node index
+		int numOfSwaps = 0;						// to record number of swaps required  
+		
+		while ( (parentIndex != 0) && (heap[parentIndex] < entry)){
+			heap[currentIndex] = heap[parentIndex];	// swaps parent into child node
+			currentIndex = parentIndex; 			// sets currentIndex to index parent was at
+			parentIndex = currentIndex / 2; 		// re-adjust parentIndex for new currentIndex
+			++numOfSwaps; 							// counts swap that took place
+		}
+		heap[currentIndex] = entry;					// now add the new entry to the heap
+		++lastIndex;								// increase to keep track of last index
+		
+		return numOfSwaps;							// returns number of swaps needed 
+	}
+
+	@Override
+	public int removeMax() {
+		
+		int root = heap[1];							// grabbing the Max value (root of tree)
+		heap[1] = heap[lastIndex];					// swapping max value to last leaf node					
+		--lastIndex;
+		
+		for(int rootIndex = lastIndex / 2; rootIndex > 0; --rootIndex){
+									// finds parent of last leaf node and calls reheap(parent)
+				reheap(rootIndex);	// performs reheap operation on every parent position in heap
+		}									
+		return root;
+	}
+
+	@Override
+	public int reheap(int rootIndex) {
+		int numOfSwaps = 0;							// to keep track of number of swaps
+		
+		int parent = heap[rootIndex];				// saving parent value from heap[rootIndex]
+		int leftChildIndex = 2 * rootIndex;			// saving leftChildIndex of rootIndex
+		
+		A: while (leftChildIndex <= lastIndex){		// will not go past lastIndex of array
+			
+			int largerChildIndex = leftChildIndex;	// assumption, will be checked for validity
+			
+			int rightChildIndex = leftChildIndex + 1; // getting location of left child
+			
+			if ((rightChildIndex <= lastIndex) && (heap[rightChildIndex] > heap[leftChildIndex])){
+													// if rightChildIndex exists and if 
+				largerChildIndex = rightChildIndex;	// right Child is larger than left Child
+			} 										// set largerChildIndex = rightChildIndex;
+			
+			if( (largerChildIndex <= lastIndex) && (parent < heap[largerChildIndex])){  	
+													// if the parent is smaller than the largest child, and child exists on array
+				heap[rootIndex] = heap[largerChildIndex];	// larger Child becomes parent 
+				rootIndex = largerChildIndex;				// adjusting rootIndex location
+				leftChildIndex = 2 * rootIndex;				// adjusting leftChildIndex
+				++numOfSwaps;								// counting swap
+			}else
+				break A;									// exits while loop
+		}
+		
+		heap[rootIndex] = parent;							// parent is saved to parent location as it is 
+		
+		return numOfSwaps;									// returns number of swaps
+	}
+	
+	@Override
+	public int getIndexValue(int index){
+		return heap[index];									// returns value in heap at specific index
+	}
+}
